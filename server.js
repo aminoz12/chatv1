@@ -108,44 +108,6 @@ async function initGoogleSheets() {
   }
 }
 
-// Function to append data to Google Sheet with better error handling
-async function appendToSheet(data) {
-  try {
-    // Check if we have a valid jwtClient
-    if (!jwtClient) {
-      console.log('Google Sheets client not initialized, skipping data storage');
-      return { status: 'skipped', reason: 'Google Sheets client not initialized' };
-    }
-    
-    const sheets = google.sheets({ version: 'v4', auth: jwtClient });
-    const spreadsheetId = process.env.SPREADSHEET_ID;
-    
-    console.log('Appending data to Google Sheet:', data);
-    
-    const response = await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: 'A1',
-      valueInputOption: 'USER_ENTERED',
-      resource: {
-        values: [data]
-      }
-    });
-    
-    console.log('Data appended to Google Sheet successfully');
-    return { status: 'success', response };
-  } catch (error) {
-    console.error('Error appending to Google Sheet:', error.message);
-    console.error('Full error:', error);
-    
-    // Return error information instead of throwing
-    return { 
-      status: 'error', 
-      error: error.message,
-      data: data 
-    };
-  }
-}
-
 // Function to store call data with simplified Google Sheets integration
 async function storeCallData(callerNumber, name, plate, service, recordingUrl) {
   try {
