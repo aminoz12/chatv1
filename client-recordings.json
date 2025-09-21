@@ -1,0 +1,17 @@
+{
+  "+33612345678": {
+    "greeting": "https://example.com/recordings/client1/greeting_v2.mp3"
+  },
+  "+33698765432": {
+    "thanks": "https://example.com/recordings/client2/thanks.mp3"
+  },
+  "+1234567890": {
+    "greeting": "https://yourserver.com/recordings/client1/greeting.mp3",
+    "prompt": "https://yourserver.com/recordings/client1/prompt.mp3",
+    "thanks": "https://yourserver.com/recordings/client1/thanks.mp3"
+  },
+  "+0987654321": {
+    "greeting": "https://yourserver.com/recordings/client2/greeting.mp3",
+    "thanks": "https://yourserver.com/recordings/client2/thanks.mp3"
+  }
+}

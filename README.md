@@ -1,0 +1,173 @@
+# Automated Call Handling System
+
+This system automatically handles incoming calls using Twilio, collects caller information via speech recognition, and stores the data in Google Sheets.
+
+## Prerequisites
+
+1. Node.js installed
+2. Twilio account with a phone number
+3. Google Cloud Platform account with a service account
+4. Google Sheets API enabled
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file with the following variables:
+
+```
+# Twilio Credentials
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
+
+# Google Sheets Configuration
+SPREADSHEET_ID=your_spreadsheet_id
+GOOGLE_SERVICE_ACCOUNT_KEY=your_service_account_key_json_as_single_line
+
+# Server Configuration
+PORT=3000
+```
+
+### 3. Configure Google Sheets API
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google Sheets API:
+   - Navigate to "APIs & Services" > "Library"
+   - Search for "Google Sheets API"
+   - Click on it and press "Enable"
+4. Create a service account:
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "Service Account"
+   - Fill in the details and click "Create"
+   - On the next screen, click "Create Key"
+   - Select "JSON" and download the key file
+   - Rename the file to `key.json` and place it in the project root directory
+5. Share your Google Sheet with the service account:
+   - Open your Google Sheet
+   - Click "Share" in the top right
+   - Add the email address from the `key.json` file (client_email field)
+   - Give it "Editor" permissions
+
+### 4. Configure Twilio Webhook
+
+1. Log in to your Twilio Console
+2. Go to "Phone Numbers" > "Manage" > "Active Numbers"
+3. Click on your phone number
+4. In the "Voice & Fax" section, set:
+   - A call comes in: Webhook
+   - Webhook URL: `https://your-ngrok-url.ngrok.io/voice` (replace with your actual URL)
+   - HTTP POST
+
+### 5. Run the Application
+
+```bash
+npm start
+```
+
+### 6. Expose Your Local Server (for testing)
+
+Use ngrok to expose your local server:
+
+```bash
+ngrok http 3000
+```
+
+Then update your Twilio webhook URL with the ngrok URL.
+
+## Usage
+
+When someone calls your Twilio number:
+1. They will hear a French greeting after a 10-second pause
+2. They will be asked to provide their name, license plate number, and desired service
+3. The system will attempt to parse this information using speech recognition
+4. If successful, the data will be stored in your Google Sheet
+5. If speech recognition fails, the system will record the call as a fallback
+6. The recorded call URL will also be stored in the Google Sheet
+
+## Data Format
+
+The Google Sheet will contain the following columns:
+- Timestamp
+- Caller Number
+- Name
+- License Plate
+- Service
+- Recording URL (if applicable)
+
+## Troubleshooting
+
+### Google Sheets API Issues
+
+If you encounter authentication errors:
+1. Make sure the Google Sheets API is enabled in your Google Cloud project
+2. Verify that your `key.json` file is in the project root directory
+3. Ensure your Google Sheet is shared with the service account email from `key.json`
+4. Check that your `SPREADSHEET_ID` in `.env` is correct
+
+### Twilio Webhook Issues
+
+If calls aren't being handled properly:
+1. Verify that your Twilio phone number webhook is set to POST to `/voice`
+2. Check that your ngrok URL is correctly configured
+3. Make sure your server is running and accessible
+
+### Speech Recognition Issues
+
+If speech isn't being parsed correctly:
+1. The system uses simple pattern matching, which may not catch all variations
+2. Consider improving the `parse-speech.js` file with more sophisticated NLP
+3. Test with clear, structured responses in French
+
+## Deployment to Render
+
+To deploy this application to Render:
+
+1. Push your code to a Git repository (GitHub, GitLab, etc.)
+
+2. Format your Google service account key for Render:
+   ```bash
+   node format-key-for-render.js
+   ```
+   Copy the output to use as your `GOOGLE_SERVICE_ACCOUNT_KEY` environment variable.
+
+3. Go to [Render Dashboard](https://dashboard.render.com/)
+4. Click "New" > "Web Service"
+5. Connect your Git repository
+6. Set the following:
+   - Name: `botcalls` (or any name you prefer)
+   - Environment: Node
+   - Build command: `npm install`
+   - Start command: `node server.js`
+   - Instance type: Free (or choose based on your needs)
+7. Add environment variables in the "Advanced" section:
+   - `TWILIO_ACCOUNT_SID` - Your Twilio Account SID
+   - `TWILIO_AUTH_TOKEN` - Your Twilio Auth Token
+   - `TWILIO_PHONE_NUMBER` - Your Twilio phone number
+   - `SPREADSHEET_ID` - Your Google Sheets Spreadsheet ID
+   - `GOOGLE_SERVICE_ACCOUNT_KEY` - The formatted key from step 2
+8. Click "Create Web Service"
+
+After deployment, your Twilio webhook URL will be:
+`https://your-render-app-name.onrender.com/voice`
+
+## Testing
+
+You can test the Google Sheets integration by running:
+
+```bash
+node test-google-sheets.js
+```
+
+You can test the speech parsing by running:
+
+```bash
+node test-speech-parsing.js
+```
